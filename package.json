@@ -47,7 +47,7 @@
   "typesVersions": {
     "*": {
       "rollup": [
-        "./dist/rollup.ts"
+        "./dist/rollup.cts"
       ]
     }
   },
