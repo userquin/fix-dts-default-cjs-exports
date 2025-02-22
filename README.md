@@ -1,4 +1,4 @@
-# Fix TypeScript Declarations for Default CJS exports
+# Fix TypeScript Declarations for default CJS exports
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
