@@ -1,11 +1,13 @@
-# Fix TypeScript Type Declarations for Default CJS exports
+# Fix TypeScript Declarations for Default CJS exports
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 
-Fix default exports in TypeScript type declarations for CommonJS modules:
-- use the api
+This utility will allow you to fix the TypeScript declaration in CommonJS modules when using default exports.
+
+You can use it via:
+- api: `fixDtsDefaultCjsExports` from default package export (WIP)
 - use Rollup plugin
 
 Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for further details when using `rollup-plugin-dts`.
