@@ -58,7 +58,7 @@
     "prepack": "pkgroll --clean-dist",
     "test": "pnpm lint && vitest run",
     "lint": "eslint .",
-    "lint:fix": "nr lint --fix",
+    "lint:fix": "pnpm lint --fix",
     "release": "pnpm test && pnpm prepack && bumpp && npm publish"
   },
   "dependencies": {
