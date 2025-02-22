@@ -37,10 +37,10 @@
   "typesVersions": {
     "*": {
       "all": [
-        "./dist/all.ts"
+        "./dist/all.cts"
       ],
       "types": [
-        "./dist/types.ts"
+        "./dist/types.cts"
       ]
     }
   },

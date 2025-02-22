@@ -61,16 +61,16 @@
   "typesVersions": {
     "*": {
       "asdefault": [
-        "./dist/asdefault.ts"
+        "./dist/asdefault.cts"
       ],
       "defaultclass": [
-        "./dist/defaultclass.ts"
+        "./dist/defaultclass.cts"
       ],
       "magicstringasdefault": [
-        "./dist/magicstringasdefault.ts"
+        "./dist/magicstringasdefault.cts"
       ],
       "resolveasdefault": [
-        "./dist/resolveasdefault.ts"
+        "./dist/resolveasdefault.cts"
       ]
     }
   },
