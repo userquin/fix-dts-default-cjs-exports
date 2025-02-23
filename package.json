@@ -43,7 +43,7 @@
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.cts",
   "typesVersions": {
     "*": {
       "rollup": [
@@ -56,10 +56,14 @@
   ],
   "scripts": {
     "prepack": "pkgroll --clean-dist",
-    "test": "pnpm lint && vitest run",
+    "test": "vitest run && pnpm test:attw",
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix",
-    "release": "pnpm test && pnpm prepack && bumpp && npm publish"
+    "release": "bumpp && npm publish",
+    "test:attw": "pnpm test:reexport-types && pnpm test:reexport-default && pnpm test:mixed-declarations",
+    "test:reexport-types": "attw --pack ./test/cjs-types-fixture/reexport-types",
+    "test:reexport-default": "attw --pack ./test/cjs-types-fixture/reexport-default",
+    "test:mixed-declarations": "attw --pack ./test/cjs-types-fixture/mixed-declarations"
   },
   "dependencies": {
     "magic-string": "^0.30.17",
@@ -68,6 +72,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.3.0",
+    "@arethetypeswrong/cli": "^0.17.4",
     "@types/node": "^20.14.8",
     "bumpp": "^10.0.3",
     "eslint": "^9.21.0",

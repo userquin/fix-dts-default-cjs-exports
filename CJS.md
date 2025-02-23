@@ -17,18 +17,18 @@ export default function foo() {}
 
 ```ts
 // module.d.[c]ts
-declare function foo(): void;
+declare function foo(): void
 
-export { foo as default };
+export { foo as default }
 ```
 
 we need to convert it to:
 
 ```ts
 // module.d.[c]ts
-declare function foo(): void;
+declare function foo(): void
 
-export = foo;
+export = foo
 ```
 
 ### Exporting default from default import
@@ -39,24 +39,24 @@ Given the following code:
 
 ```ts
 // module.ts
-import MagicString from "magic-string";
-export default MagicString;
+import MagicString from 'magic-string'
+export default MagicString
 ```
 
 `rollup-plugin-dts` will generate:
 
 ```ts
 // module.d.[c]ts
-import MagicString from "magic-string";
-export { default } from "magic-string";
+import MagicString from 'magic-string'
+export { default } from 'magic-string'
 ```
 
 we need to convert it to (doesn't require adding the import):
 
 ```ts
 // module.d.[c]ts
-import MagicString from "magic-string";
-export = MagicString;
+import MagicString from 'magic-string'
+export = MagicString
 ```
 
 ### Exporting default with specifier
@@ -67,8 +67,8 @@ Given the following code:
 
 ```ts
 // module.ts
-export type * from "./index.ts";
-export { default } from "./index.ts";
+export type * from './index.ts'
+export { default } from './index.ts'
 ```
 
 `rollup-plugin-dts` will generate:
@@ -76,17 +76,17 @@ export { default } from "./index.ts";
 ```ts
 // module.d.[c]ts
 // otherexports and otherexporttypes when present
-export { otherexports, type otherexporttypes, default } from "./index.js";
+export { default, otherexports, type otherexporttypes } from './index.js'
 ```
 
 we need to convert it to (requires adding the import):
 
 ```ts
 // module.d.[c]ts
-import _default from "./index.js";
-export = _default;
+import _default from './index.js'
+export = _default
 // otherexports and otherexporttypes when present
-export { otherexports, type otherexporttypes } from "./index.js";
+export { otherexports, type otherexporttypes } from './index.js'
 ```
 
 ### Exporting default from named import as default export with specifier
@@ -97,24 +97,24 @@ Given the following code:
 
 ```ts
 // module.ts
-import { resolve } from "pathe";
-export default resolve;
+import { resolve } from 'pathe'
+export default resolve
 ```
 
 `rollup-plugin-dts` will generate:
 
 ```ts
 // module.d.[c]ts
-import { resolve } from "pathe";
-export { resolve as default } from "pathe";
+import { resolve } from 'pathe'
+export { resolve as default } from 'pathe'
 ```
 
 we need to convert it to (doesn't require adding the import):
 
 ```ts
 // module.d.[c]ts
-import { resolve } from "pathe";
-export = resolve;
+import { resolve } from 'pathe'
+export = resolve
 ```
 
 ### Exporting named export as default with specifier
@@ -125,20 +125,20 @@ Given the following code:
 
 ```ts
 // module.ts
-export { resolve as default } from "pathe";
+export { resolve as default } from 'pathe'
 ```
 
 `rollup-plugin-dts` will generate:
 
 ```ts
 // module.d.[c]ts
-export { resolve as default } from "pathe";
+export { resolve as default } from 'pathe'
 ```
 
 we need to convert it to (requires adding the import):
 
 ```ts
 // module.d.[c]ts
-import { resolve } from "pathe";
-export = resolve;
+import { resolve } from 'pathe'
+export = resolve
 ```

@@ -1,0 +1,180 @@
+import type { ESMExport, StaticImport } from 'mlly'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { findExports, findStaticImports, findTypeExports, parseStaticImport } from 'mlly'
+import { describe, expect, it } from 'vitest'
+import { transformDtsDefaultCJSExports } from '../src'
+
+type CodeInfo = [
+  name: string,
+  types: ESMExport[],
+  exports: ESMExport[],
+  content: string,
+  imports: StaticImport[],
+]
+
+// these tests using d.mts files because we need to test the transformation
+// all local mjs imports should be transformed to cjs imports with correct extension
+// check the transformMtsDtsToCjsDts function at src/index.ts
+describe('api: node10 and Node16 Default Exports Types', () => {
+  const root = path.resolve('./test/cjs-types-fixture')
+  function resolveFile(name: string) {
+    return path.resolve(root, name)
+  }
+  function extractInfo(content: string, name: string): CodeInfo {
+    return [
+      name,
+      findTypeExports(content),
+      findExports(content),
+      content,
+      findStaticImports(content),
+    ]
+  }
+
+  it('api: mixed declarations', async () => {
+    const code = await fs.readFile(resolveFile('mixed-declarations/dist/index.d.mts'), 'utf-8')
+    const content = transformDtsDefaultCJSExports(code, 'dummy')
+    expect(content).toBeDefined()
+    const [name, types, exports] = extractInfo(content!, 'mixed-declarations')
+    expect(exports).toHaveLength(0)
+    expect(types).toHaveLength(1)
+    expect(
+      types.find(e => e.names.includes('default')),
+      `${name} should not have a default export`,
+    ).toBeUndefined()
+    expect(content).toMatchSnapshot()
+  })
+  it('api: re-Export Types', async () => {
+    const files = await Promise.all([
+      'all',
+      'index',
+      'types',
+    ].map(async (name) => {
+      name = resolveFile(`reexport-types/dist/${name}.d.mts`)
+      const content = await fs.readFile(name, 'utf8')
+      const transformed = transformDtsDefaultCJSExports(content, name)
+      // types.d.mts should not be transformed
+      return [name, transformed, transformed ?? content] as const
+    }))
+    for (const file of files) {
+      const [name, transformed, useContent] = file
+      expect(useContent, `${name} content should be defined`).toBeDefined()
+      if (name.endsWith('types.d.mts')) {
+        expect(transformed, `${name} transform should be undefined`).toBeUndefined()
+      }
+      else {
+        expect(transformed, `${name} transform should be defined`).toBeDefined()
+        expect(transformed, `${name} transform should be the same`).toBe(useContent)
+      }
+      const [_name, types, exports, _content, imports] = extractInfo(useContent, name)
+      if (name.startsWith('types')) {
+        expect(exports).toHaveLength(0)
+        expect(types).toHaveLength(1)
+        expect(
+          types.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+      }
+      else if (name.startsWith('index')) {
+        expect(exports).toHaveLength(2)
+        expect(types).toHaveLength(0)
+        expect(imports).toHaveLength(1)
+        expect(
+          exports.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        expect(useContent).toMatch('export = plugin')
+      }
+      else if (name.startsWith('all')) {
+        expect(exports).toHaveLength(2)
+        expect(types).toHaveLength(0)
+        expect(imports).toHaveLength(1)
+        expect(
+          exports.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        const defaultImport = parseStaticImport(imports[0])
+        expect(defaultImport.defaultImport).toBe('_default')
+        expect(useContent).toMatch(`export = ${defaultImport.defaultImport}`)
+      }
+      expect(useContent).toMatchSnapshot()
+    }
+  })
+  it('api: re-Export as default', async () => {
+    const files = await Promise.all([
+      'asdefault',
+      'defaultclass',
+      'index',
+      'magicstringasdefault',
+      'resolveasdefault',
+    ].map(async (name) => {
+      name = resolveFile(`reexport-default/dist/${name}.d.mts`)
+      const content = await fs.readFile(name, 'utf8')
+      return [name, transformDtsDefaultCJSExports(content, name)] as const
+    }))
+    for (const file of files) {
+      const [name, content] = file
+      expect(content, `${name} transform should be defined`).toBeDefined()
+      const [_name, types, exports, _content, imports] = extractInfo(content!, name)
+      if (name.startsWith('asdefault')) {
+        expect(exports).toHaveLength(0)
+        expect(types).toHaveLength(0)
+        expect(imports).toHaveLength(1)
+        expect(
+          types.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        const defaultImport = parseStaticImport(imports[0])
+        expect(defaultImport.namedImports?.resolve).toBeDefined()
+        expect(content).toMatch(`export = resolve`)
+      }
+      else if (name.startsWith('index')) {
+        expect(exports).toHaveLength(1)
+        expect(types).toHaveLength(0)
+        expect(imports).toHaveLength(1)
+        expect(
+          exports.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        const defaultImport = parseStaticImport(imports[0])
+        expect(defaultImport.defaultImport).toBe('MagicString')
+        expect(content).toMatch(`export = ${defaultImport.defaultImport}`)
+      }
+      else if (name.startsWith('magicstringasdefault')) {
+        expect(exports).toHaveLength(0)
+        expect(types).toHaveLength(0)
+        expect(imports.filter(i => !!i.imports)).toHaveLength(1)
+        expect(
+          exports.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        const defaultImport = parseStaticImport(imports[0])
+        expect(defaultImport.defaultImport).toBe('_default')
+        expect(content).toMatch(`export = ${defaultImport.defaultImport}`)
+      }
+      else if (name.startsWith('resolvedasdefault')) {
+        expect(exports).toHaveLength(0)
+        expect(types).toHaveLength(0)
+        expect(imports.filter(i => !!i.imports)).toHaveLength(1)
+        expect(
+          exports.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        const defaultImport = parseStaticImport(imports[0])
+        expect(defaultImport.defaultImport).toBe('resolve')
+        expect(content).toMatch(`export = ${defaultImport.defaultImport}`)
+      }
+      else if (name.startsWith('defaultclass')) {
+        expect(exports).toHaveLength(0)
+        expect(types).toHaveLength(0)
+        expect(imports.filter(i => !!i.imports)).toHaveLength(0)
+        expect(
+          exports.find(e => e.names.includes('default')),
+          `${name} should not have a default export`,
+        ).toBeUndefined()
+        expect(content).toMatch(`export = DefaultClass`)
+      }
+      expect(content).toMatchSnapshot()
+    }
+  })
+})
