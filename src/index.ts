@@ -4,6 +4,16 @@ import { internalFixDefaultCJSExports } from './utils'
 
 export type { Options }
 
+/**
+ * Fix default exports.
+ *
+ * **WARNING**: this function doesn't handle local imports/exports transformations.
+ *
+ * @param code The code to transform.
+ * @param fileName The file name.
+ * @param options The options to be used.
+ * @return The transformed code or `undefined` if no transformation was needed.
+ */
 export function transformDtsDefaultCJSExports(
   code: string,
   fileName: string,
@@ -16,6 +26,12 @@ export function transformDtsDefaultCJSExports(
   }, options)
 }
 
+/**
+ * Fix default exports in the file and writes the changes to the file when needed, otherwise the files remains untouched.
+ *
+ * @param dtsPath The path to the file to fix.
+ * @param options The path
+ */
 export async function fixDtsFileDefaultCJSExports(
   dtsPath: string,
   options: Options = {},
@@ -41,7 +57,7 @@ export interface TransformOptions {
 }
 
 /**
- * Given an `ESM` dts file, transform it to a `d.ts` or `d.cts` file fixing CJS default exports.
+ * Given an `ESM` dts file, transform it to a `d.ts` or `d.cts` file fixing CJS default exports changing the import/exports when needed.
  *
  * @param dtsPath The source `ESM` (`d.ts` or `.d.mts`) file path.
  * @param dtsDestPath The destination `.d.ts` or `.d.cts` file path.
@@ -83,6 +99,7 @@ export async function transformESMDtsToCJSDts(
  * @param code The code to transform.
  * @param dtsPath The source `ESM` (`d.ts` or `.d.mts`) file path.
  * @param dtsDestPath The destination `.d.ts` or `.d.cts` file path.
+ * @return The transformed code.
  */
 export function defaultLocalImportsTransformer(
   code: string,
