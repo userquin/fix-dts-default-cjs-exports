@@ -13,6 +13,7 @@ type CodeInfo = [
   imports: StaticImport[],
 ]
 
+// todo: find a way to avoid awaiting dist folder
 describe('api: node10 and Node16 Default Exports Types', () => {
   const root = path.resolve('./test/cjs-types-fixture')
   function resolveFile(name: string) {
@@ -28,9 +29,17 @@ describe('api: node10 and Node16 Default Exports Types', () => {
     ]
   }
 
+  async function awaitDist(path: string) {
+    while (!(await fs.lstat(path).then(s => s.isFile()).catch(() => false))) {
+      await new Promise(resolve => setTimeout(resolve, 256))
+    }
+  }
+
   it('api: mixed declarations', async () => {
     const mts = 'index.d.mts'
-    const code = await fs.readFile(resolveFile(`mixed-declarations/dist/${mts}`), 'utf-8')
+    const file = resolveFile(`mixed-declarations/dist/${mts}`)
+    await awaitDist(file)
+    const code = await fs.readFile(file, 'utf-8')
     let content = transformDtsDefaultCJSExports(code, mts)
     expect(content).toBeDefined()
     content = defaultLocalImportsTransformer(
@@ -54,6 +63,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       'types',
     ].map(async (name) => {
       name = resolveFile(`reexport-types/dist/${name}.d.mts`)
+      await awaitDist(name)
       const content = await fs.readFile(name, 'utf8')
       const transformed = transformDtsDefaultCJSExports(content, name)
       // types.d.mts should not be transformed
@@ -119,6 +129,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       'resolveasdefault',
     ].map(async (name) => {
       name = resolveFile(`reexport-default/dist/${name}.d.mts`)
+      await awaitDist(name)
       const content = await fs.readFile(name, 'utf8')
       const transformed = transformDtsDefaultCJSExports(content, name)
       return [
