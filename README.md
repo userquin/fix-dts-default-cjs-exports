@@ -20,7 +20,9 @@ You can use this package with [unbuild](https://github.com/unjs/unbuild) adding 
 
 You should register the plugin directly when enabling `rollup.emitCJS = true` option, otherwise you can get wrong transformations.
 
-The plugin exposed here is just a helper to fix the default exports in CommonJS modules, it cannot control what files are being generated, check the [declaration](https://github.com/unjs/unbuild?tab=readme-ov-file#configuration) option in the readme file. 
+> [!WARNING]
+>
+> The plugin exposed here is just a helper to fix the default exports in CommonJS modules, it cannot control what files are being generated, check the [declaration](https://github.com/unjs/unbuild?tab=readme-ov-file#configuration) option in the readme file.
 
 You will need to remove its current internal plugin adding the one provided by this package:
 ```ts
@@ -51,7 +53,7 @@ export default defineBuildConfig({
 })
 ```
 
-> [!WARNING]
+> [!NOTE]
 > 
 > In a near future, [unbuild](https://github.com/unjs/unbuild) will use the Rollup plugin from this package when enabling `rollup.emitCJS = true`.
 
