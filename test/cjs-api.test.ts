@@ -13,9 +13,6 @@ type CodeInfo = [
   imports: StaticImport[],
 ]
 
-// these tests using d.mts files because we need to test the transformation
-// all local mjs imports should be transformed to cjs imports with correct extension
-// check the transformMtsDtsToCjsDts function at src/index.ts
 describe('api: node10 and Node16 Default Exports Types', () => {
   const root = path.resolve('./test/cjs-types-fixture')
   function resolveFile(name: string) {
@@ -41,6 +38,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       mts,
       mts.replace(/\.d\.mts$/, '.d.cts'),
     )
+    expect(content).toMatchSnapshot()
     const [name, types, exports] = extractInfo(content!, 'mixed-declarations')
     expect(exports).toHaveLength(0)
     expect(types).toHaveLength(1)
@@ -48,7 +46,6 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       types.find(e => e.names.includes('default')),
       `${name} should not have a default export`,
     ).toBeUndefined()
-    expect(content).toMatchSnapshot()
   })
   it('api: re-Export Types', async () => {
     const files = await Promise.all([
@@ -79,8 +76,9 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       else {
         expect(transformed, `${name} transform should be defined`).toBeDefined()
       }
+      expect(useContent).toMatchSnapshot()
       const [_name, types, exports, _content, imports] = extractInfo(useContent, name)
-      if (name.startsWith('types')) {
+      if (name.endsWith('types.d.mts')) {
         expect(exports).toHaveLength(0)
         expect(types).toHaveLength(1)
         expect(
@@ -88,7 +86,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
           `${name} should not have a default export`,
         ).toBeUndefined()
       }
-      else if (name.startsWith('index')) {
+      else if (name.endsWith('index.d.mts')) {
         expect(exports).toHaveLength(2)
         expect(types).toHaveLength(0)
         expect(imports).toHaveLength(1)
@@ -98,7 +96,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         ).toBeUndefined()
         expect(useContent).toMatch('export = plugin')
       }
-      else if (name.startsWith('all')) {
+      else if (name.endsWith('all.d.mts')) {
         expect(exports).toHaveLength(2)
         expect(types).toHaveLength(0)
         expect(imports).toHaveLength(1)
@@ -110,7 +108,6 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         expect(defaultImport.defaultImport).toBe('_default')
         expect(useContent).toMatch(`export = ${defaultImport.defaultImport}`)
       }
-      expect(useContent).toMatchSnapshot()
     }
   })
   it('api: re-Export as default', async () => {
@@ -137,8 +134,9 @@ describe('api: node10 and Node16 Default Exports Types', () => {
     for (const file of files) {
       const [name, content, useContent] = file
       expect(content, `${name} transform should be defined`).toBeDefined()
+      expect(useContent).toMatchSnapshot()
       const [_name, types, exports, _content, imports] = extractInfo(useContent, name)
-      if (name.startsWith('asdefault')) {
+      if (name.match(/[\\/]asdefault.d.mts$/)) {
         expect(exports).toHaveLength(0)
         expect(types).toHaveLength(0)
         expect(imports).toHaveLength(1)
@@ -150,7 +148,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         expect(defaultImport.namedImports?.resolve).toBeDefined()
         expect(content).toMatch(`export = resolve`)
       }
-      else if (name.startsWith('index')) {
+      else if (name.endsWith('index.d.mts')) {
         expect(exports).toHaveLength(1)
         expect(types).toHaveLength(0)
         expect(imports).toHaveLength(1)
@@ -162,7 +160,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         expect(defaultImport.defaultImport).toBe('MagicString')
         expect(content).toMatch(`export = ${defaultImport.defaultImport}`)
       }
-      else if (name.startsWith('magicstringasdefault')) {
+      else if (name.endsWith('magicstringasdefault.d.mts')) {
         expect(exports).toHaveLength(0)
         expect(types).toHaveLength(0)
         expect(imports.filter(i => !!i.imports)).toHaveLength(1)
@@ -174,7 +172,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         expect(defaultImport.defaultImport).toBe('_default')
         expect(content).toMatch(`export = ${defaultImport.defaultImport}`)
       }
-      else if (name.startsWith('resolvedasdefault')) {
+      else if (name.endsWith('resolvedasdefault.d.mts')) {
         expect(exports).toHaveLength(0)
         expect(types).toHaveLength(0)
         expect(imports.filter(i => !!i.imports)).toHaveLength(1)
@@ -186,7 +184,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         expect(defaultImport.defaultImport).toBe('resolve')
         expect(content).toMatch(`export = ${defaultImport.defaultImport}`)
       }
-      else if (name.startsWith('defaultclass')) {
+      else if (name.endsWith('defaultclass.d.mts')) {
         expect(exports).toHaveLength(0)
         expect(types).toHaveLength(0)
         expect(imports.filter(i => !!i.imports)).toHaveLength(0)
@@ -196,7 +194,6 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         ).toBeUndefined()
         expect(content).toMatch(`export = DefaultClass`)
       }
-      expect(useContent).toMatchSnapshot()
     }
   })
 })
