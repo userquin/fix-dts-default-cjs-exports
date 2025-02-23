@@ -77,12 +77,14 @@ function extractExports(
 
   if (!defaultExport) {
     options.warn?.(
+      /* c8 ignore next */
       `No default export found in ${info.fileName}, it contains default export but cannot be parsed.`,
     )
     return
   }
 
   const match = defaultExport.code.match(/export\s*\{([^}]*)\}/)
+  /* c8 ignore next */
   if (!match?.length) {
     options.warn?.(
       `No default export found in ${info.fileName}, it contains default export but cannot be parsed.`,
@@ -211,7 +213,7 @@ function handleDefaultNamedCJSExport(
       options.warn?.(
         `Cannot parse default export name from ${defaultImport.specifier} import at ${info.fileName}!.`,
       )
-      return undefined
+      return
     }
 
     return handleDefaultCJSExportAsDefault(

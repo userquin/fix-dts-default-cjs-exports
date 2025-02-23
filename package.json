@@ -56,7 +56,9 @@
   ],
   "scripts": {
     "prepack": "pkgroll --clean-dist",
-    "test": "vitest run && pnpm test:attw",
+    "test:full": "pnpm test:coverage && pnpm test:attw",
+    "test:coverage": "vitest run --coverage",
+    "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix",
     "release": "bumpp && npm publish",
@@ -74,6 +76,7 @@
     "@antfu/eslint-config": "^4.3.0",
     "@arethetypeswrong/cli": "^0.17.4",
     "@types/node": "^20.14.8",
+    "@vitest/coverage-v8": "^3.0.6",
     "bumpp": "^10.0.3",
     "eslint": "^9.21.0",
     "pathe": "^2.0.3",

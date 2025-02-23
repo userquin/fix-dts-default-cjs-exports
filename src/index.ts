@@ -67,7 +67,7 @@ export async function transformESMDtsToCJSDts(
 
   await fs.writeFile(
     dtsDestPath,
-    transformLocalImports(dtsPath, dtsDestPath, result),
+    transformLocalImports(result, dtsPath, dtsDestPath),
     'utf8',
   )
 }
