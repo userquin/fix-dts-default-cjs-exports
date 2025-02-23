@@ -11,7 +11,7 @@ Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for f
 ## Features
 
 - 🚀 Fix default exports in CommonJS modules via API or Rollup plugin
-- ✨ Generate `d.ts` and `d.cts` from `d.mts` files
+- ✨ Generate CommonJS `d.ts` and `d.cts` files from `d.mts` files
 - 💥 Use it with custom builders like [unbuild](https://github.com/unjs/unbuild), [tsup](https://github.com/egoist/tsup) or [pkgroll](https://github.com/privatenumber/pkgroll) (right now only `unbuild` supported, `tsup` and `pkgroll` doesn't allow adding Rollup plugins)
 
 ## unbuild
