@@ -18,9 +18,9 @@ Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for f
 
 You can use this package with [unbuild](https://github.com/unjs/unbuild) adding the Rollup plugin in the `rollup:dts:options` hook.
 
-You should register the plugin directly when enabling `rollup.emitCJS = true` option, otherwise you can get wrong transformations.
-
 > [!WARNING]
+>
+> You should register the plugin directly when enabling `rollup.emitCJS = true` option, otherwise you can get wrong transformations.
 >
 > The plugin exposed here is just a helper to fix the default exports in CommonJS modules, it cannot control what files are being generated, check the [declaration](https://github.com/unjs/unbuild?tab=readme-ov-file#configuration) option in the readme file.
 
