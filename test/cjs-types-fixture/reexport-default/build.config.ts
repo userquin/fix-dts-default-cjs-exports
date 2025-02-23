@@ -1,5 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
-import { FixDtsDefaultCjsExportsPlugin } from '../../../src/rollup'
+import { prepareDtsPlugins } from '../../prepare-dts-plugins'
 
 export default defineBuildConfig({
   entries: [
@@ -28,16 +28,10 @@ export default defineBuildConfig({
   },
   hooks: {
     'rollup:dts:options': (ctx, options) => {
-      options.plugins = options.plugins.filter((p) => {
-        if (!p || typeof p === 'string' || Array.isArray(p) || !('name' in p))
-          return true
-
-        return p.name !== 'fix-dts-default-cjs-exports-plugin'
-          && p.name !== 'unbuild-fix-cjs-export-type'
-      })
-      options.plugins.push(FixDtsDefaultCjsExportsPlugin({
-        warn: message => ctx.warnings.add(message),
-      }))
+      options.plugins = prepareDtsPlugins(
+        options.plugins,
+        message => ctx.warnings.add(message),
+      )
     },
   },
 })
