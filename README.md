@@ -6,11 +6,62 @@
 
 This utility will allow you to fix the TypeScript declaration in CommonJS modules when using default exports.
 
-You can use it via:
-- api: `fixDtsDefaultCjsExports` from default package export (WIP)
-- use Rollup plugin
-
 Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for further details when using `rollup-plugin-dts`.
+
+## Features
+
+- 🚀 Fix default exports in CommonJS modules via API or Rollup plugin
+- ✨ Generate `.d.ts` and `d.cts` from `.d.mts` files
+- 💥 Use it with custom builders like [unbuild](https://github.com/unjs/unbuild), [tsup](https://github.com/egoist/tsup) or [pkgroll](https://github.com/privatenumber/pkgroll) (right now only `unbuild` supported, `tsup` and `pkgroll` doesn't allow adding Rollup plugins)
+
+## unbuild
+
+You can use this package with [unbuild](https://github.com/unjs/unbuild) adding the Rollup plugin in the `rollup:dts:options` hook.
+
+You should register the plugin directly when enabling `rollup.emitCJS = true` option, otherwise you can get wrong transformations.
+
+The plugin exposed here is just a helper to fix the default exports in CommonJS modules, it cannot control what files are being generated, check the [declaration](https://github.com/unjs/unbuild?tab=readme-ov-file#configuration) option in the readme file. 
+
+You will need to remove its current internal plugin adding the one provided by this package:
+```ts
+// build.config.ts
+import { defineBuildConfig } from 'unbuild'
+import { FixDtsDefaultCjsExportsPlugin } from 'fix-dts-default-cjs-exports/rollup'
+
+export default defineBuildConfig({
+  entries: ['<your-entry-points>'],
+  declaration: true,
+  clean: true,
+  rollup: { emitCJS: true },
+  hooks: {
+    'rollup:dts:options': (ctx, options) => {
+      /* uncomment this block if you want to remove the unbuild internal plugin
+      options.plugins = plugins.filter((p) => {
+        if (!p || typeof p === 'string' || Array.isArray(p) || !('name' in p))
+          return true
+      
+        return p.name !== 'unbuild-fix-cjs-export-type'
+      })  
+      */
+      options.plugins.push(FixDtsDefaultCjsExportsPlugin({
+        warn: message => ctx.warnings.add(message)
+      }))
+    }
+  }
+})
+```
+
+> [!WARNING]
+> 
+> In a near future, [unbuild](https://github.com/unjs/unbuild) will use the Rollup plugin from this package when enabling `rollup.emitCJS = true`.
+
+## tsup
+
+Since [tsup](https://github.com/egoist/tsup) doesn't expose any hook to allow change internal configuration, we need a change in the package to include the Rollup plugin from this package instead its built-in one.
+
+## pkgroll
+
+[pkgroll](https://github.com/privatenumber/pkgroll) is exposing only the `cli`, we need a change in the package to include the Rollup plugin from this package instead its built-in one.
 
 ## License
 
