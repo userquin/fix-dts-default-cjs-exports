@@ -1,70 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`api > api: mixed declarations 1`] = `
-"interface A {
-    name: string;
-}
-interface B {
-    name: string;
-}
-interface C {
-    name: string;
-}
-interface Options {
-    a?: A;
-    b?: B;
-    c?: C;
-}
-declare function plugin(options?: Options): Options;
-
-export = plugin;
-export type { A, B, C, Options };
-"
-`;
-
-exports[`api > api: re-Export Types 1`] = `
-"import _default from './index.mjs';
-export = _default;
-export { ResolvedOptions } from './index.mjs';
-export { A, B, CC as C, CC, Options } from './types.mjs';
-"
-`;
-
-exports[`api > api: re-Export Types 2`] = `
-"import { Options } from './types.mjs';
-export { A, B, CC as C, CC } from './types.mjs';
-
-interface ResolvedOptions extends Options {
-    name: string;
-}
-declare function plugin(options?: Options): ResolvedOptions;
-
-export = plugin;
-export { Options, type ResolvedOptions };
-"
-`;
-
-exports[`api > api: re-Export Types 3`] = `
-"interface A {
-    name: string;
-}
-interface B {
-    name: string;
-}
-interface C {
-    name: string;
-}
-
-interface Options {
-    a?: A;
-    b?: B;
-    c?: C;
-}
-
-export type { A, B, C, C as CC, Options };
-"
-`;
-
 exports[`api: node10 and Node16 Default Exports Types > api: mixed declarations 1`] = `
 "interface A {
     name: string;
@@ -88,16 +23,16 @@ export type { A, B, C, Options };
 `;
 
 exports[`api: node10 and Node16 Default Exports Types > api: re-Export Types 1`] = `
-"import _default from './index.mjs';
+"import _default from './index.cjs';
 export = _default;
-export { ResolvedOptions } from './index.mjs';
-export { A, B, CC as C, CC, Options } from './types.mjs';
+export { ResolvedOptions } from './index.cjs';
+export { A, B, CC as C, CC, Options } from './types.cjs';
 "
 `;
 
 exports[`api: node10 and Node16 Default Exports Types > api: re-Export Types 2`] = `
-"import { Options } from './types.mjs';
-export { A, B, CC as C, CC } from './types.mjs';
+"import { Options } from './types.cjs';
+export { A, B, CC as C, CC } from './types.cjs';
 
 interface ResolvedOptions extends Options {
     name: string;

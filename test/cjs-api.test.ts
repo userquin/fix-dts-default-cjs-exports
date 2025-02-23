@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { findExports, findStaticImports, findTypeExports, parseStaticImport } from 'mlly'
 import { describe, expect, it } from 'vitest'
-import { transformDtsDefaultCJSExports } from '../src'
+import { defaultLocalImportsTransformer, transformDtsDefaultCJSExports } from '../src'
 
 type CodeInfo = [
   name: string,
@@ -32,9 +32,15 @@ describe('api: node10 and Node16 Default Exports Types', () => {
   }
 
   it('api: mixed declarations', async () => {
-    const code = await fs.readFile(resolveFile('mixed-declarations/dist/index.d.mts'), 'utf-8')
-    const content = transformDtsDefaultCJSExports(code, 'dummy')
+    const mts = 'index.d.mts'
+    const code = await fs.readFile(resolveFile(`mixed-declarations/dist/${mts}`), 'utf-8')
+    let content = transformDtsDefaultCJSExports(code, mts)
     expect(content).toBeDefined()
+    content = defaultLocalImportsTransformer(
+      content!,
+      mts,
+      mts.replace(/\.d\.mts$/, '.d.cts'),
+    )
     const [name, types, exports] = extractInfo(content!, 'mixed-declarations')
     expect(exports).toHaveLength(0)
     expect(types).toHaveLength(1)
@@ -54,7 +60,15 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       const content = await fs.readFile(name, 'utf8')
       const transformed = transformDtsDefaultCJSExports(content, name)
       // types.d.mts should not be transformed
-      return [name, transformed, transformed ?? content] as const
+      return [
+        name,
+        transformed,
+        defaultLocalImportsTransformer(
+          transformed ?? content,
+          path.basename(name),
+          path.basename(name).replace(/\.d\.mts$/, '.d.cts'),
+        ),
+      ] as const
     }))
     for (const file of files) {
       const [name, transformed, useContent] = file
@@ -64,7 +78,6 @@ describe('api: node10 and Node16 Default Exports Types', () => {
       }
       else {
         expect(transformed, `${name} transform should be defined`).toBeDefined()
-        expect(transformed, `${name} transform should be the same`).toBe(useContent)
       }
       const [_name, types, exports, _content, imports] = extractInfo(useContent, name)
       if (name.startsWith('types')) {
@@ -110,12 +123,21 @@ describe('api: node10 and Node16 Default Exports Types', () => {
     ].map(async (name) => {
       name = resolveFile(`reexport-default/dist/${name}.d.mts`)
       const content = await fs.readFile(name, 'utf8')
-      return [name, transformDtsDefaultCJSExports(content, name)] as const
+      const transformed = transformDtsDefaultCJSExports(content, name)
+      return [
+        name,
+        transformed,
+        defaultLocalImportsTransformer(
+          transformed ?? content,
+          path.basename(name),
+          path.basename(name).replace(/\.d\.mts$/, '.d.cts'),
+        ),
+      ] as const
     }))
     for (const file of files) {
-      const [name, content] = file
+      const [name, content, useContent] = file
       expect(content, `${name} transform should be defined`).toBeDefined()
-      const [_name, types, exports, _content, imports] = extractInfo(content!, name)
+      const [_name, types, exports, _content, imports] = extractInfo(useContent, name)
       if (name.startsWith('asdefault')) {
         expect(exports).toHaveLength(0)
         expect(types).toHaveLength(0)
@@ -174,7 +196,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         ).toBeUndefined()
         expect(content).toMatch(`export = DefaultClass`)
       }
-      expect(content).toMatchSnapshot()
+      expect(useContent).toMatchSnapshot()
     }
   })
 })
