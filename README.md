@@ -31,8 +31,8 @@ You can use this package with [unbuild](https://github.com/unjs/unbuild) adding 
 You will need to remove its current internal plugin adding the one provided by this package:
 ```ts
 // build.config.ts
-import { defineBuildConfig } from 'unbuild'
 import { FixDtsDefaultCjsExportsPlugin } from 'fix-dts-default-cjs-exports/rollup'
+import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   entries: ['<your-entry-points>'],
@@ -45,9 +45,9 @@ export default defineBuildConfig({
       options.plugins = plugins.filter((p) => {
         if (!p || typeof p === 'string' || Array.isArray(p) || !('name' in p))
           return true
-      
+
         return p.name !== 'unbuild-fix-cjs-export-type'
-      })  
+      })
       */
       options.plugins.push(FixDtsDefaultCjsExportsPlugin({
         warn: message => ctx.warnings.add(message)
