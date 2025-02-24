@@ -1,6 +1,6 @@
 import type { ESMExport, StaticImport } from 'mlly'
-import fs from 'node:fs/promises'
-import path from 'node:path'
+import { lstat, readFile } from 'node:fs/promises'
+import { basename, resolve } from 'node:path'
 import { findExports, findStaticImports, findTypeExports, parseStaticImport } from 'mlly'
 import { describe, expect, it } from 'vitest'
 import { defaultLocalImportsTransformer, transformDtsDefaultCJSExports } from '../src'
@@ -13,11 +13,10 @@ type CodeInfo = [
   imports: StaticImport[],
 ]
 
-// todo: find a way to avoid awaiting dist folder
 describe('api: node10 and Node16 Default Exports Types', () => {
-  const root = path.resolve('./test/cjs-types-fixture')
+  const root = resolve('./test/fixtures')
   function resolveFile(name: string) {
-    return path.resolve(root, name)
+    return resolve(root, name)
   }
   function extractInfo(content: string, name: string): CodeInfo {
     return [
@@ -29,17 +28,26 @@ describe('api: node10 and Node16 Default Exports Types', () => {
     ]
   }
 
-  async function awaitDist(path: string) {
-    while (!(await fs.lstat(path).then(s => s.isFile()).catch(() => false))) {
-      await new Promise(resolve => setTimeout(resolve, 256))
+  async function awaitDistFile(path: string) {
+    while (!(await lstat(path).then(s => s.isFile()).catch(() => false))) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
     }
+  }
+
+  async function awaitDist(path: string) {
+    await Promise.race([
+      awaitDistFile(path),
+      new Promise((_, reject) => setTimeout(() => {
+        reject(new Error(`Timeout waiting for ${path}`))
+      }, 20_000)),
+    ])
   }
 
   it('api: mixed declarations', async () => {
     const mts = 'index.d.mts'
     const file = resolveFile(`mixed-declarations/dist/${mts}`)
     await awaitDist(file)
-    const code = await fs.readFile(file, 'utf-8')
+    const code = await readFile(file, 'utf-8')
     let content = transformDtsDefaultCJSExports(code, mts)
     expect(content).toBeDefined()
     content = defaultLocalImportsTransformer(
@@ -64,7 +72,7 @@ describe('api: node10 and Node16 Default Exports Types', () => {
     ].map(async (name) => {
       name = resolveFile(`reexport-types/dist/${name}.d.mts`)
       await awaitDist(name)
-      const content = await fs.readFile(name, 'utf8')
+      const content = await readFile(name, 'utf8')
       const transformed = transformDtsDefaultCJSExports(content, name)
       // types.d.mts should not be transformed
       return [
@@ -72,8 +80,8 @@ describe('api: node10 and Node16 Default Exports Types', () => {
         transformed,
         defaultLocalImportsTransformer(
           transformed ?? content,
-          path.basename(name),
-          path.basename(name).replace(/\.d\.mts$/, '.d.cts'),
+          basename(name),
+          basename(name).replace(/\.d\.mts$/, '.d.cts'),
         ),
       ] as const
     }))
@@ -130,15 +138,15 @@ describe('api: node10 and Node16 Default Exports Types', () => {
     ].map(async (name) => {
       name = resolveFile(`reexport-default/dist/${name}.d.mts`)
       await awaitDist(name)
-      const content = await fs.readFile(name, 'utf8')
+      const content = await readFile(name, 'utf8')
       const transformed = transformDtsDefaultCJSExports(content, name)
       return [
         name,
         transformed,
         defaultLocalImportsTransformer(
           transformed ?? content,
-          path.basename(name),
-          path.basename(name).replace(/\.d\.mts$/, '.d.cts'),
+          basename(name),
+          basename(name).replace(/\.d\.mts$/, '.d.cts'),
         ),
       ] as const
     }))

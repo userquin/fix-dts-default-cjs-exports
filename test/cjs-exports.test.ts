@@ -45,7 +45,7 @@ describe('node10 and Node16 Default Exports Types', () => {
   it('mixed Declaration Types', async () => {
     const root = resolve(
       fileURLToPath(import.meta.url),
-      '../cjs-types-fixture/mixed-declarations',
+      '../fixtures/mixed-declarations',
     )
     await build(root, false)
     const files = await readDtsFiles(resolve(root, 'dist'))
@@ -65,7 +65,7 @@ describe('node10 and Node16 Default Exports Types', () => {
     const warnings: string[] = []
     const root = resolve(
       fileURLToPath(import.meta.url),
-      '../cjs-types-fixture/reexport-types',
+      '../fixtures/reexport-types',
     )
     await build(root, false, {
       hooks: {
@@ -124,7 +124,7 @@ describe('node10 and Node16 Default Exports Types', () => {
   it('re-Export as default', async () => {
     const root = resolve(
       fileURLToPath(import.meta.url),
-      '../cjs-types-fixture/reexport-default',
+      '../fixtures/reexport-default',
     )
     await build(root, false)
     const files = await readDtsFiles(resolve(root, 'dist'))

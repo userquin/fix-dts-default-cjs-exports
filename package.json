@@ -63,9 +63,9 @@
     "lint:fix": "pnpm lint --fix",
     "release": "bumpp && npm publish",
     "test:attw": "pnpm test:reexport-types && pnpm test:reexport-default && pnpm test:mixed-declarations",
-    "test:reexport-types": "attw --pack ./test/cjs-types-fixture/reexport-types",
-    "test:reexport-default": "attw --pack ./test/cjs-types-fixture/reexport-default",
-    "test:mixed-declarations": "attw --pack ./test/cjs-types-fixture/mixed-declarations"
+    "test:reexport-types": "attw --pack test/fixtures/reexport-types",
+    "test:reexport-default": "attw --pack test/fixtures/reexport-default",
+    "test:mixed-declarations": "attw --pack test/fixtures/mixed-declarations"
   },
   "dependencies": {
     "magic-string": "^0.30.17",
