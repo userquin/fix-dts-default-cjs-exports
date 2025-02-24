@@ -4,7 +4,7 @@ This document will cover all the types of default exports that can be generated 
 
 ### Export default without specifier from the module itself
 
-The following example can be found in the [reexport-types](./test/cjs-types-fixture/reexport-types) fixture, check `index.ts` module.
+The following example can be found in the [reexport-types](test/fixtures/reexport-types) fixture, check `index.ts` module.
 
 Given the following code:
 
@@ -33,7 +33,7 @@ export = foo
 
 ### Exporting default from default import
 
-The following example can be found in the [reexport-default](./test/cjs-types-fixture/reexport-default) fixture, check `index.ts` module.
+The following example can be found in the [reexport-default](test/fixtures/reexport-default) fixture, check `index.ts` module.
 
 Given the following code:
 
@@ -61,7 +61,7 @@ export = MagicString
 
 ### Exporting default with specifier
 
-The following example can be found in the [reexport-types](./test/cjs-types-fixture/reexport-types) fixture, check `all.ts` module.
+The following example can be found in the [reexport-types](test/fixtures/reexport-types) fixture, check `all.ts` module.
 
 Given the following code:
 
@@ -91,7 +91,7 @@ export { otherexports, type otherexporttypes } from './index.js'
 
 ### Exporting default from named import as default export with specifier
 
-The following example can be found in the [reexport-default](./test/cjs-types-fixture/reexport-default) fixture, check `asdefault.ts` module.
+The following example can be found in the [reexport-default](test/fixtures/reexport-default) fixture, check `asdefault.ts` module.
 
 Given the following code:
 
@@ -119,7 +119,7 @@ export = resolve
 
 ### Exporting named export as default with specifier
 
-The following example can be found in the [reexport-default](./test/cjs-types-fixture/reexport-default) fixture, check `resolveasdefault.ts` module.
+The following example can be found in the [reexport-default](test/fixtures/reexport-default) fixture, check `resolveasdefault.ts` module.
 
 Given the following code:
 
