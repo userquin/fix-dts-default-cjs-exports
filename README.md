@@ -20,7 +20,7 @@ Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for f
 >
 > [unbuild](https://github.com/unjs/unbuild) `v3.5.0` uses the Rollup plugin from this package to fix the default exports in CommonJS modules.
 
-For older `unplugin` versions, you can add the Rollup plugin from this package using the `rollup:dts:options` hook.
+For older `unbuild` versions, you can add the Rollup plugin from this package using the `rollup:dts:options` hook.
 
 > [!WARNING]
 >
