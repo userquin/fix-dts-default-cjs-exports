@@ -12,21 +12,21 @@ Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for f
 
 - 🚀 Fix default exports in CommonJS modules via API or Rollup plugin
 - ✨ Generate CommonJS `d.ts` and `d.cts` files from `d.mts` files
-- 💥 Use it with custom builders like [unbuild](https://github.com/unjs/unbuild), [tsup](https://github.com/egoist/tsup) or [pkgroll](https://github.com/privatenumber/pkgroll) (right now only `unbuild` supported, `tsup` and `pkgroll` doesn't allow adding Rollup plugins)
+- 💥 Use it with custom builders like [unbuild](https://github.com/unjs/unbuild), [tsup](https://github.com/egoist/tsup) or [pkgroll](https://github.com/privatenumber/pkgroll) (right now only `unbuild` supported, `tsup` and `pkgroll` don't allow adding Rollup plugins)
 
 ## unbuild
 
-You can use this package with [unbuild](https://github.com/unjs/unbuild) adding the Rollup plugin in the `rollup:dts:options` hook.
+> [!NOTE]
+>
+> [unbuild](https://github.com/unjs/unbuild) `v3.5.0` uses the Rollup plugin from this package to fix the default exports in CommonJS modules.
+
+For older `unbuild` versions, you can add the Rollup plugin from this package using the `rollup:dts:options` hook.
 
 > [!WARNING]
 >
 > You should register the plugin directly when enabling `rollup.emitCJS = true` option, otherwise you can get wrong transformations.
 >
 > The plugin exposed here is just a helper to fix the default exports in CommonJS modules, it cannot control what files are being generated, check the [declaration](https://github.com/unjs/unbuild?tab=readme-ov-file#configuration) option in the readme file.
-
-> [!NOTE]
->
-> In a near future, [unbuild](https://github.com/unjs/unbuild) will use the Rollup plugin from this package when enabling `rollup.emitCJS = true`.
 
 You will need to remove its current internal plugin adding the one provided by this package:
 ```ts
