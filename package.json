@@ -37,8 +37,7 @@
       "require": {
         "types": "./dist/rollup.d.cts",
         "default": "./dist/rollup.cjs"
-      },
-      "default": "./dist/rollup.mjs"
+      }
     }
   },
   "main": "./dist/index.js",
