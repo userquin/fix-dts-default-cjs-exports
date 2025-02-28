@@ -12,7 +12,7 @@ Check the CJS fixtures in the test folder and the [CJS](./CJS.md) document for f
 
 - 🚀 Fix default exports in CommonJS modules via API or Rollup plugin
 - ✨ Generate CommonJS `d.ts` and `d.cts` files from `d.mts` files
-- 💥 Use it with custom builders like [unbuild](https://github.com/unjs/unbuild), [tsup](https://github.com/egoist/tsup) or [pkgroll](https://github.com/privatenumber/pkgroll) (right now only `unbuild` supported, `tsup` and `pkgroll` don't allow adding Rollup plugins)
+- 💥 Use it with custom builders like [unbuild](https://github.com/unjs/unbuild), [tsup](https://github.com/egoist/tsup) or [pkgroll](https://github.com/privatenumber/pkgroll) (right now only `unbuild` and  `tsup` supported, `pkgroll` don't allow adding Rollup plugins)
 
 ## unbuild
 
@@ -59,7 +59,37 @@ export default defineBuildConfig({
 
 ## tsup
 
-Since [tsup](https://github.com/egoist/tsup) doesn't expose any hook to allow change internal configuration, we need a change in the package to include the Rollup plugin from this package instead its built-in one.
+> [!NOTE]
+>
+> [tsup](https://github.com/egoist/tsup) `v8.5.0` uses the Rollup plugin from this package to fix the default exports in CommonJS modules.
+
+For older `tsup` versions, you can use the API from this package using the [onSuccess](https://tsup.egoist.dev/#onsuccess) hook.
+
+For example, using the `onSuccess` hook via `tsup` config file:
+```ts
+// tsup.config.ts
+import type { Options } from 'fix-dts-default-cjs-exports'
+import { fixDtsFileDefaultCJSExports } from 'fix-dts-default-cjs-exports'
+import { defineConfig } from 'tsup'
+
+export default defineConfig({
+  entry: ['<your-entry-points>'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  async onSuccess() {
+    const warnings: string[] = []
+    const options = {
+      warn: (message: string) => warnings.push(message)
+    } satisfies Options
+    await Promise.all([
+      fixDtsFileDefaultCJSExports('<your-entry-point-1>.d.ts', options),
+      fixDtsFileDefaultCJSExports('<your-entry-point-1>.d.cts', options),
+      // more d.ts/d.cts entry points
+    ])
+    console.log(warnings)
+  }
+})
+```
 
 ## pkgroll
 
