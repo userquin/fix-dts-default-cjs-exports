@@ -7,7 +7,7 @@ exports[`node10 and Node16 Default Exports Types > mixed Declaration Types 1`] =
     [
       {
         "code": "export type { A, B, C, Options }",
-        "end": 260,
+        "end": 274,
         "exports": " A, B, C, Options",
         "names": [
           "A",
@@ -16,7 +16,7 @@ exports[`node10 and Node16 Default Exports Types > mixed Declaration Types 1`] =
           "Options",
         ],
         "specifier": undefined,
-        "start": 228,
+        "start": 242,
         "type": "named",
       },
     ],
@@ -37,6 +37,7 @@ interface Options {
 }
 declare function plugin(options?: Options): Options;
 
+// @ts-ignore
 export = plugin;
 export type { A, B, C, Options };
 ",
@@ -47,7 +48,7 @@ export type { A, B, C, Options };
     [
       {
         "code": "export type { A, B, C, Options }",
-        "end": 260,
+        "end": 274,
         "exports": " A, B, C, Options",
         "names": [
           "A",
@@ -56,7 +57,7 @@ export type { A, B, C, Options };
           "Options",
         ],
         "specifier": undefined,
-        "start": 228,
+        "start": 242,
         "type": "named",
       },
     ],
@@ -77,6 +78,7 @@ interface Options {
 }
 declare function plugin(options?: Options): Options;
 
+// @ts-ignore
 export = plugin;
 export type { A, B, C, Options };
 ",
@@ -93,19 +95,19 @@ exports[`node10 and Node16 Default Exports Types > re-Export Types 1`] = `
     [
       {
         "code": "export { ResolvedOptions } from './index.cjs'",
-        "end": 100,
+        "end": 114,
         "exports": " ResolvedOptions",
         "name": "ResolvedOptions",
         "names": [
           "ResolvedOptions",
         ],
         "specifier": "./index.cjs",
-        "start": 55,
+        "start": 69,
         "type": "named",
       },
       {
         "code": "export { A, B, CC as C, CC, Options } from './types.cjs'",
-        "end": 158,
+        "end": 172,
         "exports": " A, B, CC as C, CC, Options",
         "names": [
           "A",
@@ -115,11 +117,12 @@ exports[`node10 and Node16 Default Exports Types > re-Export Types 1`] = `
           "Options",
         ],
         "specifier": "./types.cjs",
-        "start": 102,
+        "start": 116,
         "type": "named",
       },
     ],
     "import _default from './index.cjs';
+// @ts-ignore
 export = _default;
 export { ResolvedOptions } from './index.cjs';
 export { A, B, CC as C, CC, Options } from './types.cjs';
@@ -142,19 +145,19 @@ export { A, B, CC as C, CC, Options } from './types.cjs';
     [
       {
         "code": "export { ResolvedOptions } from './index.js'",
-        "end": 98,
+        "end": 112,
         "exports": " ResolvedOptions",
         "name": "ResolvedOptions",
         "names": [
           "ResolvedOptions",
         ],
         "specifier": "./index.js",
-        "start": 54,
+        "start": 68,
         "type": "named",
       },
       {
         "code": "export { A, B, CC as C, CC, Options } from './types.js'",
-        "end": 155,
+        "end": 169,
         "exports": " A, B, CC as C, CC, Options",
         "names": [
           "A",
@@ -164,11 +167,12 @@ export { A, B, CC as C, CC, Options } from './types.cjs';
           "Options",
         ],
         "specifier": "./types.js",
-        "start": 100,
+        "start": 114,
         "type": "named",
       },
     ],
     "import _default from './index.js';
+// @ts-ignore
 export = _default;
 export { ResolvedOptions } from './index.js';
 export { A, B, CC as C, CC, Options } from './types.js';
@@ -205,14 +209,14 @@ export { A, B, CC as C, CC, Options } from './types.js';
       },
       {
         "code": "export { Options, type ResolvedOptions }",
-        "end": 272,
+        "end": 286,
         "exports": " Options, type ResolvedOptions",
         "name": "Options",
         "names": [
           "Options",
         ],
         "specifier": undefined,
-        "start": 232,
+        "start": 246,
         "type": "named",
       },
     ],
@@ -224,6 +228,7 @@ interface ResolvedOptions extends Options {
 }
 declare function plugin(options?: Options): ResolvedOptions;
 
+// @ts-ignore
 export = plugin;
 export { Options, type ResolvedOptions };
 ",
@@ -259,14 +264,14 @@ export { Options, type ResolvedOptions };
       },
       {
         "code": "export { Options, type ResolvedOptions }",
-        "end": 270,
+        "end": 284,
         "exports": " Options, type ResolvedOptions",
         "name": "Options",
         "names": [
           "Options",
         ],
         "specifier": undefined,
-        "start": 230,
+        "start": 244,
         "type": "named",
       },
     ],
@@ -278,6 +283,7 @@ interface ResolvedOptions extends Options {
 }
 declare function plugin(options?: Options): ResolvedOptions;
 
+// @ts-ignore
 export = plugin;
 export { Options, type ResolvedOptions };
 ",
@@ -448,18 +454,19 @@ export = DefaultClass;
     [
       {
         "code": "export { MagicStringOptions } from 'magic-string'",
-        "end": 111,
+        "end": 125,
         "exports": " MagicStringOptions",
         "name": "MagicStringOptions",
         "names": [
           "MagicStringOptions",
         ],
         "specifier": "magic-string",
-        "start": 62,
+        "start": 76,
         "type": "named",
       },
     ],
     "import MagicString from 'magic-string';
+// @ts-ignore
 export = MagicString;
 export { MagicStringOptions } from 'magic-string';
 ",
@@ -481,18 +488,19 @@ export { MagicStringOptions } from 'magic-string';
     [
       {
         "code": "export { MagicStringOptions } from 'magic-string'",
-        "end": 111,
+        "end": 125,
         "exports": " MagicStringOptions",
         "name": "MagicStringOptions",
         "names": [
           "MagicStringOptions",
         ],
         "specifier": "magic-string",
-        "start": 62,
+        "start": 76,
         "type": "named",
       },
     ],
     "import MagicString from 'magic-string';
+// @ts-ignore
 export = MagicString;
 export { MagicStringOptions } from 'magic-string';
 ",
