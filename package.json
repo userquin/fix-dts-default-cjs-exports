@@ -1,7 +1,7 @@
 {
   "name": "fix-dts-default-cjs-exports",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "packageManager": "pnpm@10.6.3",
   "description": "Utility to fix TypeScript declarations when using default exports in CommonJS.",
   "author": "userquin <userquin@gmail.com>",
