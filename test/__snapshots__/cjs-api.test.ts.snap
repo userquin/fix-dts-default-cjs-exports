@@ -17,6 +17,7 @@ interface Options {
 }
 declare function plugin(options?: Options): Options;
 
+// @ts-ignore
 export = plugin;
 export type { A, B, C, Options };
 "
@@ -24,6 +25,7 @@ export type { A, B, C, Options };
 
 exports[`api: node10 and Node16 Default Exports Types > api: re-Export Types 1`] = `
 "import _default from './index.cjs';
+// @ts-ignore
 export = _default;
 export { ResolvedOptions } from './index.cjs';
 export { A, B, CC as C, CC, Options } from './types.cjs';
@@ -39,6 +41,7 @@ interface ResolvedOptions extends Options {
 }
 declare function plugin(options?: Options): ResolvedOptions;
 
+// @ts-ignore
 export = plugin;
 export { Options, type ResolvedOptions };
 "
@@ -83,6 +86,7 @@ export = DefaultClass;
 
 exports[`api: node10 and Node16 Default Exports Types > api: re-Export as default 3`] = `
 "import MagicString from 'magic-string';
+// @ts-ignore
 export = MagicString;
 export { MagicStringOptions } from 'magic-string';
 "

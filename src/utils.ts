@@ -140,7 +140,9 @@ function handleDefaultCJSExportAsDefault(
         )
       : code.replace(
           defaultExport.code,
-          `export = ${defaultImport.defaultImport};\nexport { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
+          `// @ts-ignore
+export = ${defaultImport.defaultImport};
+export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
         )
   }
   else {
@@ -164,7 +166,9 @@ function handleDefaultCJSExportAsDefault(
       ? magicString
           .replace(
             defaultExport.code,
-            `export = _default;\nexport { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
+            `// @ts-ignore
+export = _default;
+export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
           )
           .toString()
       : magicString.replace(defaultExport.code, 'export = _default').toString()
@@ -232,7 +236,9 @@ function handleDefaultNamedCJSExport(
         ? code.replace(defaultExport.code, `export = ${defaultAlias}`)
         : code.replace(
             defaultExport.code,
-            `export = ${defaultAlias};\nexport { ${exports.join(', ')} }`,
+            `// @ts-ignore
+export = ${defaultAlias};
+export { ${exports.join(', ')} }`,
           )
     }
     else {
@@ -263,7 +269,9 @@ function handleDefaultNamedCJSExport(
     ? magicString
         .replace(
           defaultExport.code,
-          `export = ${defaultAlias};\nexport { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
+          `// @ts-ignore
+export = ${defaultAlias};
+export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
         )
         .toString()
     : magicString
@@ -307,6 +315,6 @@ function handleNoSpecifierDefaultCJSExport(
 
   return code.replace(
     defaultExport.code,
-    `export = ${defaultAlias}${exportStatement}`,
+    `${exportStatement.length > 0 ? '// @ts-ignore\n' : ''}export = ${defaultAlias}${exportStatement}`,
   )
 }
