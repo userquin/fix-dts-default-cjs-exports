@@ -13,11 +13,44 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./defaultclass": {
+      "import": {
+        "types": "./dist/defaultclass.d.mts",
+        "default": "./dist/defaultclass.mjs"
+      },
+      "require": {
+        "types": "./dist/defaultclass.d.cts",
+        "default": "./dist/defaultclass.cjs"
+      }
+    },
+    "./defaultconst": {
+      "import": {
+        "types": "./dist/defaultconst.d.mts",
+        "default": "./dist/defaultconst.mjs"
+      },
+      "require": {
+        "types": "./dist/defaultconst.d.cts",
+        "default": "./dist/defaultconst.cjs"
+      }
     }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "defaultclass": [
+        "./dist/defaultclass.d.ts"
+      ],
+      "defaultconst": [
+        "./dist/defaultconst.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "attw": "attw --pack"
+  },
   "files": [
     "dist"
   ]

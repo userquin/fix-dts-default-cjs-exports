@@ -62,6 +62,9 @@
     "lint:fix": "pnpm lint --fix",
     "release": "bumpp && npm publish",
     "test:attw": "pnpm test:reexport-types && pnpm test:reexport-default && pnpm test:mixed-declarations",
+    "build:reexport-types": "unbuild --config ./test/fixtures/reexport-types/build.config.ts ./test/fixtures/reexport-types/",
+    "build:reexport-default": "unbuild --config ./test/fixtures/reexport-default/build.config.ts ./test/fixtures/reexport-default/",
+    "build:mixed-declarations": "unbuild ./test/fixtures/mixed-declarations/",
     "test:reexport-types": "attw --pack test/fixtures/reexport-types",
     "test:reexport-default": "attw --pack test/fixtures/reexport-default",
     "test:mixed-declarations": "attw --pack test/fixtures/mixed-declarations"
@@ -69,6 +72,7 @@
   "dependencies": {
     "magic-string": "^0.30.17",
     "mlly": "^1.7.4",
+    "oxc-parser": "^0.61.0",
     "rollup": "^4.34.8"
   },
   "devDependencies": {
@@ -81,7 +85,10 @@
     "pathe": "^2.0.3",
     "pkgroll": "^2.11.0",
     "typescript": "^5.7.3",
-    "unbuild": "3.3.1",
+    "unbuild": "^3.5.0",
     "vitest": "^3.0.6"
+  },
+  "optionalDependencies": {
+    "@oxc-parser/binding-wasm32-wasi": "^0.61.0"
   }
 }

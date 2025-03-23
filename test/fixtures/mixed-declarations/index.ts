@@ -13,6 +13,11 @@ export interface Options {
   c?: C
 }
 
+export type APrime = A
+
+export const Data = ['a', 'b', 'c'] as const
+export type DataType = typeof Data[number]
+
 export default function plugin(options: Options = {}): Options {
   return options
 }
