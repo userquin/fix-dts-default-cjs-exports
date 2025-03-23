@@ -1,6 +1,9 @@
 import type { ESMExport, ParsedStaticImport } from 'mlly'
+import type { Span } from 'oxc-parser'
+import { readFile, writeFile } from 'node:fs/promises'
 import MagicString from 'magic-string'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
+import { parseSync } from 'oxc-parser'
 
 export interface CodeInfo {
   fileName: string
@@ -52,12 +55,14 @@ export function internalFixDefaultCJSExports(
         code,
         parsedExports,
         imports,
+        info,
+        options,
         defaultImport,
-      ) || handleNoSpecifierDefaultCJSExport(code, info, parsedExports)
+      ) || handleNoSpecifierDefaultCJSExport(code, info, parsedExports, options)
   }
 
   // export { xxx as default };
-  return handleNoSpecifierDefaultCJSExport(code, info, parsedExports)
+  return handleNoSpecifierDefaultCJSExport(code, info, parsedExports, options)
 }
 
 interface ParsedExports {
@@ -130,6 +135,8 @@ function handleDefaultCJSExportAsDefault(
   code: string,
   { defaultExport, exports }: ParsedExports,
   imports: ParsedStaticImport[],
+  info: CodeInfo,
+  options: Options,
   defaultImport?: ParsedStaticImport,
 ): string | undefined {
   if (defaultImport) {
@@ -138,11 +145,16 @@ function handleDefaultCJSExportAsDefault(
           defaultExport.code,
           `export = ${defaultImport.defaultImport}`,
         )
-      : code.replace(
-          defaultExport.code,
-          `// @ts-ignore
+      : createCjsNamespace(
+          code,
+          code.replace(
+            defaultExport.code,
+            `// @ts-ignore
 export = ${defaultImport.defaultImport};
 export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
+          ),
+          info,
+          options,
         )
   }
   else {
@@ -163,14 +175,19 @@ export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
     }
 
     return exports.length > 0
-      ? magicString
-          .replace(
-            defaultExport.code,
-            `// @ts-ignore
+      ? createCjsNamespace(
+          code,
+          magicString
+            .replace(
+              defaultExport.code,
+              `// @ts-ignore
 export = _default;
 export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
-          )
-          .toString()
+            )
+            .toString(),
+          info,
+          options,
+        )
       : magicString.replace(defaultExport.code, 'export = _default').toString()
   }
 }
@@ -224,6 +241,8 @@ function handleDefaultNamedCJSExport(
       code,
       parsedExports,
       imports,
+      info,
+      options,
       defaultImport,
     )
   }
@@ -234,11 +253,16 @@ function handleDefaultNamedCJSExport(
     if (namedExports?.[defaultAlias] === defaultAlias) {
       return exports.length === 0
         ? code.replace(defaultExport.code, `export = ${defaultAlias}`)
-        : code.replace(
-            defaultExport.code,
-            `// @ts-ignore
+        : createCjsNamespace(
+            code,
+            code.replace(
+              defaultExport.code,
+              `// @ts-ignore
 export = ${defaultAlias};
 export { ${exports.join(', ')} }`,
+            ),
+            info,
+            options,
           )
     }
     else {
@@ -266,14 +290,19 @@ export { ${exports.join(', ')} }`,
   }
 
   return exports.length > 0
-    ? magicString
-        .replace(
-          defaultExport.code,
-          `// @ts-ignore
+    ? createCjsNamespace(
+        code,
+        magicString
+          .replace(
+            defaultExport.code,
+            `// @ts-ignore
 export = ${defaultAlias};
 export { ${exports.join(', ')} } from '${defaultExport.specifier}'`,
-        )
-        .toString()
+          )
+          .toString(),
+        info,
+        options,
+      )
     : magicString
         .replace(defaultExport.code, `export = ${defaultAlias}`)
         .toString()
@@ -284,6 +313,7 @@ function handleNoSpecifierDefaultCJSExport(
   code: string,
   info: CodeInfo,
   { defaultAlias, defaultExport, exports }: ParsedExports,
+  options: Options,
 ): string | undefined {
   let exportStatement = exports.length > 0 ? undefined : ''
 
@@ -313,8 +343,248 @@ function handleNoSpecifierDefaultCJSExport(
       : `;\nexport type { ${allRemainingExports.map(([_, t]) => t).join(', ')} }`
   }
 
-  return code.replace(
-    defaultExport.code,
-    `${exportStatement.length > 0 ? '// @ts-ignore\n' : ''}export = ${defaultAlias}${exportStatement}`,
-  )
+  return exportStatement.length === 0
+    ? code.replace(defaultExport.code, `export = ${defaultAlias}`)
+    : createCjsNamespace(
+        code,
+        `// @ts-ignore\n${defaultAlias}${exportStatement}`,
+        info,
+        options,
+      )
 }
+
+interface Decl extends Span {
+  declare: boolean
+  isClass?: boolean
+  isVariable?: boolean
+}
+
+interface DefaultExport extends Span {
+  local: string
+}
+interface Export {
+  type: boolean
+}
+
+type Declaration =
+  | import('oxc-parser').VariableDeclaration
+  | import('oxc-parser').Function
+  | import('oxc-parser').Class
+  | import('oxc-parser').TSTypeAliasDeclaration
+  | import('oxc-parser').TSInterfaceDeclaration
+  | import('oxc-parser').TSEnumDeclaration
+
+function prepareDeclaration(
+  decls: Map<string, Decl>,
+  decl: Declaration,
+  unnamed: () => string,
+) {
+  // VariableDeclaration
+  if ('declarations' in decl && decl.declarations.length > 0) {
+    const id = decl.declarations[0].id
+    if (id.type === 'Identifier') {
+      decls.set(id.name, {
+        start: decl.start,
+        end: decl.end,
+        declare: decl.declare === true,
+        isVariable: true,
+      })
+      return
+    }
+  }
+
+  // TSInterfaceDeclaration, TSTypeAliasDeclaration, TSEnumDeclaration, Function and Class
+  if ('id' in decl && decl.id && decl.id.type === 'Identifier') {
+    const name = decl.id.name
+    decls.set(name, {
+      start: decl.start,
+      end: decl.end,
+      declare: decl.declare === true,
+      isClass: decl.type === 'ClassDeclaration',
+    })
+
+    return
+  }
+
+  decls.set(unnamed(), {
+    start: decl.start,
+    end: decl.end,
+    declare: decl.declare === true,
+  })
+}
+
+function createCjsNamespace(
+  code: string,
+  transformedCode: string,
+  info: CodeInfo,
+  options: Options,
+): string {
+  const parsed = parseSync(info.fileName, code, {
+    lang: 'ts',
+    astType: 'ts',
+    sourceType: 'module',
+  })
+
+  const declarations = new Map<string, Decl>()
+  let defaultExport: DefaultExport | undefined
+  const exports = new Map<string, Export>()
+  const program = parsed.program
+  let unnamed = 0
+  for (const node of program.body) {
+    if (node.type === 'ExportNamedDeclaration') {
+      for (const exp of node.specifiers) {
+        if (exp.exported.type === 'Identifier') {
+          if (exp.exported.name === 'default') {
+            if (exp.local.type === 'Identifier') {
+              defaultExport = { local: exp.local.name, start: exp.start, end: exp.end }
+            }
+          }
+          else {
+            if (exp.exported.type === 'Identifier') {
+              exports.set(exp.exported.name, { type: exp.exportKind === 'type' })
+            }
+          }
+        }
+      }
+    }
+    else {
+      // todo: we need to review the types here since we need to write the original declarations
+      switch (node.type) {
+        // almost type Declaration: omit TSModuleDeclaration and TSImportEqualsDeclaration
+        case 'VariableDeclaration':
+        case 'FunctionDeclaration':
+        case 'TSDeclareFunction':
+        case 'ClassDeclaration':
+        case 'TSTypeAliasDeclaration':
+        case 'TSInterfaceDeclaration':
+        case 'TSEnumDeclaration':
+          prepareDeclaration(declarations, node, () => `__unnamed_${unnamed++}$$`)
+          break
+        case 'TSModuleDeclaration':
+        case 'ImportDeclaration':
+        case 'TSImportEqualsDeclaration':
+          declarations.set(`__unnamed_${unnamed++}$$`, {
+            start: node.start,
+            end: node.end,
+            declare: false,
+          })
+          break
+      }
+    }
+  }
+  if (!defaultExport) {
+    options.warn?.(`Cannot infer default export from the file: ${info.fileName}`)
+    return transformedCode
+  }
+
+  const defaultLocalExport = declarations.get(defaultExport.local)
+
+  if (!defaultLocalExport) {
+    options.warn?.(`Cannot infer default export from the file: ${info.fileName}`)
+    return code
+  }
+
+  if (defaultLocalExport.isVariable) {
+    options.warn?.(`Cannot use default export with a variable: ${code.slice(defaultLocalExport.start, defaultLocalExport.end)}`)
+    return code
+  }
+
+  // when using export default with a class we need to add the name as prefix in the options:
+  // declare class SomeClass { parent: SomeClass, b: OtherType, ... }
+  // becomes:
+  // declare class SomeClass { parent: SomeClass.SomeClass, b: SomeClass.OtherType, ... }
+  // where SomeClass is the namespace:
+  // declare namespace SomeClass {
+  //   export interface OtherType { ... }
+  //   import default SomeClass;
+  //   export { _default as default };
+  // }
+  // export = SomeClass;
+  const classDeclarationRegexp = defaultLocalExport.isClass
+    ? new RegExp(`\\s*${defaultLocalExport.declare ? 'declare\\s+' : ''}class\\s+${defaultExport.local}\\s+{\\s+`)
+    : undefined
+  const useExports: string[] = []
+  for (const name of exports.keys()) {
+    // exclude the default export from the useExports to avoid replacing
+    // its declaration with the namespace prefix
+    if (name === defaultExport.local) {
+      continue
+    }
+    useExports.push(name)
+  }
+  const replaceRegExp = new RegExp(`(${useExports.join('|')})`, 'g')
+
+  const applyReplacements = (text: string) => {
+    const classDeclaration = classDeclarationRegexp?.exec(text)
+    let prefix: string | undefined
+    let useText = text
+    if (classDeclaration?.length) {
+      prefix = text.slice(0, classDeclaration[0].length)
+      useText = text.slice(classDeclaration[0].length)
+    }
+    useText = useText.replace(replaceRegExp, `${defaultExport.local}.$1`)
+    if (prefix)
+      useText = `${prefix}${useText}`
+
+    return useText
+  }
+
+  // write the default export declaration applying the replacements with available declarations
+  const ms = new MagicString(
+    `${applyReplacements(code.slice(defaultLocalExport.start, defaultLocalExport.end))}
+declare namespace ${defaultExport.local} {
+`,
+  )
+  // write the declarations
+  for (const [name, decl] of declarations.entries()) {
+    if (name === defaultExport.local) {
+      continue
+    }
+    const chunk = code.slice(decl.start, decl.end)
+    ms.append('    ')
+    // replace declare with export
+    if (decl.declare) {
+      ms.append(chunk.replace('declare', 'export').replaceAll('    ', '        ').replace('}', '    }'))
+    }
+    else {
+      ms.append(`export ${chunk}`.replaceAll('    ', '        ').replace('}', '    }'))
+    }
+    ms.append('\n')
+  }
+  // include the default export to allow use default export or the declaration
+  ms.append(`    import _default = ${defaultExport.local};\n    export { _default as default };\n`)
+  ms.append(`}\nexport = ${defaultExport.local};\n`)
+  return ms.toString()
+}
+
+async function main(files: string[]) {
+  for (const file of files) {
+    const code = await readFile(file, 'utf-8')
+    console.log(`****************${file}****************`)
+    const result = internalFixDefaultCJSExports(code, {
+      fileName: file,
+      imports: [],
+    }, {
+      warn(message) {
+        console.warn(message)
+      },
+    })
+    if (result) {
+      await writeFile(file, result, 'utf-8')
+    }
+  }
+}
+
+main([
+  '../test/fixtures/mixed-declarations/dist/index.d.ts',
+  '../test/fixtures/mixed-declarations/dist/index.d.cts',
+  '../test/fixtures/mixed-declarations/dist/defaultclass.d.ts',
+  '../test/fixtures/mixed-declarations/dist/defaultclass.d.cts',
+  '../test/fixtures/mixed-declarations/dist/defaultconst.d.ts',
+  '../test/fixtures/mixed-declarations/dist/defaultconst.d.cts',
+  // '../test/fixtures/reexport-default/dist/asdefault.d.ts',
+  // '../test/fixtures/reexport-default/dist/defaultclass.d.ts',
+  // '../test/fixtures/reexport-default/dist/index.d.ts',
+  // '../test/fixtures/reexport-default/dist/magicstringasdefault.d.ts',
+  // '../test/fixtures/reexport-default/dist/resolveasdefault.d.ts',
+])
